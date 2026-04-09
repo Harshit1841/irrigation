@@ -2,15 +2,15 @@
 API Key authentication middleware.
 """
 
-from fastapi import Request, HTTPException, status
+from fastapi import HTTPException, status, Depends
 from fastapi.security import APIKeyHeader
 
 from app.config import settings
 
-API_KEY_HEADER = APIKeyHeader(name="X-API-Key", auto_error=False)
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
-async def verify_api_key(request: Request, api_key: str | None = API_KEY_HEADER):
+async def verify_api_key(api_key: str | None = Depends(api_key_header)):
     """
     Verify the API key from the request header.
     """

@@ -6,8 +6,10 @@ Run after the server is started:
 import json
 import urllib.request
 import urllib.error
+import os
 
 BASE = "http://localhost:8000"
+API_KEY = os.getenv("API_KEY", "")
 
 payload = {
     "sensor": {
@@ -39,10 +41,13 @@ payload = {
 
 def post(path, data):
     body = json.dumps(data).encode()
+    headers = {"Content-Type": "application/json"}
+    if API_KEY:
+        headers["X-API-Key"] = API_KEY
     req = urllib.request.Request(
         f"{BASE}{path}",
         data=body,
-        headers={"Content-Type": "application/json"},
+        headers=headers,
         method="POST",
     )
     with urllib.request.urlopen(req) as resp:
@@ -50,7 +55,11 @@ def post(path, data):
 
 
 def get(path):
-    with urllib.request.urlopen(f"{BASE}{path}") as resp:
+    headers = {}
+    if API_KEY:
+        headers["X-API-Key"] = API_KEY
+    req = urllib.request.Request(f"{BASE}{path}", headers=headers)
+    with urllib.request.urlopen(req) as resp:
         return json.loads(resp.read())
 
 
