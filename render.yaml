@@ -6,3 +6,8 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     pythonVersion: 3.11.0
     autoDeploy: true
+    envVars:
+      - key: API_KEY
+        value: irrigation-secret-key-2024
+      - key: DEBUG
+        value: "false"
