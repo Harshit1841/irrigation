@@ -7,7 +7,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,9 +17,17 @@ from app.models import (
     AnomalyEvent,
     IrrigationDecision,
     MoisturePrediction,
+    PlantProfile,
     SensorReading,
 )
-from app.schemas import IrrigationRequest, IrrigationResponse, TrendOut, ReadingOut
+from app.schemas import (
+    IrrigationRequest,
+    IrrigationResponse,
+    TrendOut,
+    ReadingOut,
+    PlantProfileCreate,
+    PlantProfileOut,
+)
 from app.ai.classification import get_classification
 from app.ai.prediction import predict_moisture
 from app.ai.anomaly import detect_anomalies
@@ -212,3 +220,44 @@ async def get_history(
         total_anomalies=anomaly_count,
         pump_on_count=pump_on_count,
     )
+
+
+@router.get(
+    "/plants",
+    response_model=list[PlantProfileOut],
+    summary="List all plants",
+    dependencies=[Depends(verify_api_key)],
+)
+async def list_plants(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PlantProfile).order_by(PlantProfile.name))
+    return result.scalars().all()
+
+
+@router.post(
+    "/plants",
+    response_model=PlantProfileOut,
+    status_code=201,
+    summary="Add a new plant",
+    dependencies=[Depends(verify_api_key)],
+)
+async def add_plant(data: PlantProfileCreate, db: AsyncSession = Depends(get_db)):
+    plant = PlantProfile(**data.model_dump())
+    db.add(plant)
+    await db.commit()
+    await db.refresh(plant)
+    return plant
+
+
+@router.delete(
+    "/plants/{plant_id}",
+    status_code=204,
+    summary="Delete a plant",
+    dependencies=[Depends(verify_api_key)],
+)
+async def delete_plant(plant_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PlantProfile).where(PlantProfile.id == plant_id))
+    plant = result.scalar_one_or_none()
+    if not plant:
+        raise HTTPException(status_code=404, detail="Plant not found")
+    await db.delete(plant)
+    await db.commit()
