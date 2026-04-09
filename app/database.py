@@ -3,12 +3,14 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.config import settings
 
-is_sqlite = settings.DATABASE_URL.startswith("sqlite")
+db_url = "sqlite+aiosqlite:///./irrigation.db"
+
+is_sqlite = True
 
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    db_url,
     echo=settings.DEBUG,
-    connect_args={"check_same_thread": False} if is_sqlite else {},
+    connect_args={"check_same_thread": False},
 )
 
 AsyncSessionLocal = async_sessionmaker(

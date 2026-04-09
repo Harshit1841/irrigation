@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./irrigation.db"
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
-    DEBUG: bool = True
+    DEBUG: bool = False
     API_KEY: str = ""
 
     # Anomaly thresholds
