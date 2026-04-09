@@ -8,6 +8,6 @@ services:
     autoDeploy: true
     envVars:
       - key: API_KEY
-        value: irrigation-secret-key-2024
+        value: gorakhpur123456789
       - key: DEBUG
         value: "false"
